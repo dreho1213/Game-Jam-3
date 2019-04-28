@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
+    public Animator animator;
 
     public float speed;
     public float jumpForce;
@@ -20,6 +21,8 @@ public class PlayerController : MonoBehaviour
 
     private int extraJumps;
     public int extraJumpValue;
+
+    private float hSpeed;
 
     // Start is called before the first frame update
     void Start()
@@ -74,6 +77,10 @@ public class PlayerController : MonoBehaviour
             //Debug.Log("hi");
             rb.velocity = Vector2.up * jumpForce;
         }
+
+        hSpeed = Input.GetAxisRaw("Horizontal") * speed;
+        animator.SetFloat("Speed", Mathf.Abs(hSpeed));
+        animator.SetBool("IsJumping", !isGrounded);
     }
 
         
