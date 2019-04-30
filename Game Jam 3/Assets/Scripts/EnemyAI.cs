@@ -1,123 +1,167 @@
-﻿// using System.Collections;
-// using System.Collections.Generic;
-// using UnityEngine;
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
 
-// public class EnemyAI : MonoBehaviour
-// {
+public class EnemyAI : MonoBehaviour
+{
 
-//     public float gravity;
-//     public Vector2 velocity;
-//     public bool isWalkingLeft = true;
+    public float gravity;
+    public Vector2 velocity;
+    public bool isWalkingLeft = true;
     
-//     LayerMask floorMask;
+    public LayerMask floorMask;
+    public LayerMask wallMask;
 
-//     private bool grounded = false;
+    private bool grounded = false;
 
-//     private enum EnemyState {
-//         walking,
-//         falling,
-//         dead
-//     }
+    private enum EnemyState {
+        walking,
+        falling,
+        dead
+    }
 
-//     private EnemyState state = EnemyState.falling;
+    private EnemyState state = EnemyState.falling;
 
-//     // Start is called before the first frame update
-//     void Start()
-//     {
-//         enabled = false;
+    // Start is called before the first frame update
+    void Start()
+    {
+        enabled = false;
 
-//         Fall();
-//     }
+        fall();
+    }
 
-//     // Update is called once per frame
-//     void Update()
-//     {
-//         UpdateEnemyPosition();
-//     }
+    // Update is called once per frame
+    void Update()
+    {
+        UpdateEnemyPosition();
+    }
 
-//     void UpdateEnemyPosition()
-//     {
-//         if(state != EnemyState.dead){
-//             Vector3 pos = transform.localPosition;
-//             Vector3 scale = transform.localScale;
+    void UpdateEnemyPosition()
+    {
+        if(state != EnemyState.dead){
+            Vector3 pos = transform.localPosition;
+            Vector3 scale = transform.localScale;
 
-//             if(state == EnemyState.falling){
-//                 pos.y += velocity.y * Time.deltaTime;
+            if(state == EnemyState.falling){
+                pos.y += velocity.y * Time.deltaTime;
 
-//                 velocity.y -= gravity * Time.deltaTime;
-//             }
+                velocity.y -= gravity * Time.deltaTime;
+            }
 
-//             if(state == EnemyState.walking){
+            if(state == EnemyState.walking){
                
-//                 if(isWalkingLeft){
+                if(isWalkingLeft){
                   
-//                     pos.x -= velocity.x * Time.deltaTime;
+                    pos.x -= velocity.x * Time.deltaTime;
 
-//                     scale.x = -1;
-//                 }else{
-//                     pos.x += velocity.x * Time.deltaTime;
+                    scale.x = -1;
+                }else{
+                    pos.x += velocity.x * Time.deltaTime;
 
-//                     scale.x = 1;
-//                 }
-//             }
-//             if(velocity.y <= 0){
-//                 pos = CheckGround(pos);
-//             }
+                    scale.x = 1;
+                }
+            }
+            if(velocity.y <= 0){
+                pos = CheckGround(pos);
+            }
 
-//             transform.localPosition = pos;
-//             transform.localScale = scale;
-//         }
-//     }
+            CheckWalls(pos, scale.x);
 
-//     Vector3 CheckGround(Vector3 pos)
-//     {
-//         Vector2 originLeft = new Vector2 (pos.x - 0.5f + 0.2f, pos.y - 0.5f); //0.5 because enemy 1 unit tall (15:55 in video)
-//         Vector2 originMiddle = new Vector2(pos.x, pos.y - 0.5f);
-//         Vector2 originRight = new Vector2(pos.x + 0.5f - 0.2f, pos.y - 0.5f);
+            transform.localPosition = pos;
+            transform.localScale = scale;
+        }
+    }
 
-//         RaycastHit2D groundLeft = Physics2D.Raycast(originLeft, Vector2.down, velocity.y * Time.deltaTime, floorMask);
-//         RaycastHit2D groundMiddle = Physics2D.Raycast(originMiddle, Vector2.down, velocity.y * Time.deltaTime, floorMask);
-//         RaycastHit2D groundRight = Physics2D.Raycast(originRight, Vector2.down, velocity.y * Time.deltaTime, floorMask);
+    Vector3 CheckGround(Vector3 pos)
+    {
+        Vector2 originLeft = new Vector2 (pos.x - 0.5f + 0.2f, pos.y - 0.5f); //0.5 because enemy 1 unit tall (15:55 in video)
+        Vector2 originMiddle = new Vector2(pos.x, pos.y - 0.5f);
+        Vector2 originRight = new Vector2(pos.x + 0.5f - 0.2f, pos.y - 0.5f);
 
-//         if(groundLeft.collider != null || groundMiddle.collider != null || groundRight.collider != null){
+        RaycastHit2D groundLeft = Physics2D.Raycast(originLeft, Vector2.down, velocity.y * Time.deltaTime, floorMask);
+        RaycastHit2D groundMiddle = Physics2D.Raycast(originMiddle, Vector2.down, velocity.y * Time.deltaTime, floorMask);
+        RaycastHit2D groundRight = Physics2D.Raycast(originRight, Vector2.down, velocity.y * Time.deltaTime, floorMask);
+
+        if(groundLeft.collider != null || groundMiddle.collider != null || groundRight.collider != null){
             
-//             RaycastHit2D hitRay = groundLeft;
+            RaycastHit2D hitRay = groundLeft;
 
-//             if(groundLeft){
-//                 hitRay = groundLeft;
-//             } else if(groundMiddle){
-//                 hitRay = groundMiddle;
-//             } else if(groundRight){
-//                 hitRay = groundRight;
-//             }
+            if(groundLeft){
+                hitRay = groundLeft;
+            } else if(groundMiddle){
+                hitRay = groundMiddle;
+            } else if(groundRight){
+                hitRay = groundRight;
+            }
 
-//             pos.y = hitRay.collider.bounds.center.y + hitRay.collider.bounds.size.y/2 + 0.5f;
+            if(hitRay.collider.tag == "Player")
+            {
+                Application.LoadLevel("Level 1");
+            }
 
-//             grounded = true;
+            pos.y = hitRay.collider.bounds.center.y + hitRay.collider.bounds.size.y/2 + 0.5f;
 
-//             velocity.y = 0;
+            grounded = true;
 
-//             state = EnemyState.walking;
+            velocity.y = 0;
 
-//         } else {
+            state = EnemyState.walking;
 
-//             if(state != EnemyState.falling){
-//                 Fall();
-//             }
-//         }
-//         return pos;
-//     }
+        } else {
 
-//     void OnBecameVisible()
-//     {
-//         enabled = true;
-//     }
+            if(state != EnemyState.falling){
+                fall();
+            }
+        }
+        return pos;
+    }
+    
+    void CheckWalls(Vector3 pos, float direction)
+    {
+        Vector2 originTop = new Vector2 (pos.x + direction * 0.4f, pos.y + 0.5f - 0.2f);
+        Vector2 originMiddle = new Vector2 (pos.x + direction * 0.4f, pos.y);
+        Vector2 originBottom = new Vector2 (pos.x + direction * 0.4f, pos.y - 0.5f + 0.2f);
 
-//     void fall()
-//     {
-//         velocity.y = 0;
+        RaycastHit2D wallTop = Physics2D.Raycast (originTop, new Vector2(direction, 0), velocity.x * Time.deltaTime, wallMask);
+        RaycastHit2D wallMiddle = Physics2D.Raycast (originMiddle, new Vector2(direction, 0), velocity.x * Time.deltaTime, wallMask);
+        RaycastHit2D wallBottom = Physics2D.Raycast (originBottom, new Vector2(direction, 0), velocity.x * Time.deltaTime, wallMask);
 
-//         state = EnemyState.falling;
-//         grounded = false;
-//     }
-// }
+        if(wallTop.collider != null || wallMiddle.collider != null || wallBottom.collider != null)
+        {
+            RaycastHit2D hitRay = wallTop;
+
+            if(wallTop)
+            {
+                hitRay = wallTop;
+            }
+            else if(wallMiddle)
+            {
+                hitRay = wallMiddle;
+            }
+            else if(wallBottom)
+            {
+                hitRay = wallBottom;
+            }
+
+             if(hitRay.collider.tag == "Player")
+            {
+                Application.LoadLevel("Level 1");
+            }
+
+            isWalkingLeft = !isWalkingLeft;
+        }   
+    }
+ 
+    void OnBecameVisible()
+    {
+        enabled = true;
+    }
+
+    void fall()
+    {
+        velocity.y = 0;
+
+        state = EnemyState.falling;
+        grounded = false;
+    }
+}
